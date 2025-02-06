@@ -1,0 +1,40 @@
+<header class="bg-gray-900 text-white p-4 flex justify-between items-center">
+  <h1 class="text-xl font-bold">Chat App</h1>
+  <nav>
+    <ul class="flex gap-4">
+      <li><a routerLink="/" class="hover:text-gray-300">Home</a></li>
+      <li>
+        <a
+          routerLink="/chat"
+          *ngIf="isAuthenticated()"
+          class="hover:text-gray-300"
+          >Chat</a
+        >
+      </li>
+      <li>
+        <a
+          routerLink="/login"
+          *ngIf="!isAuthenticated()"
+          class="hover:text-gray-300"
+          >Login</a
+        >
+      </li>
+      <li>
+        <a
+          routerLink="/register"
+          *ngIf="!isAuthenticated()"
+          class="hover:text-gray-300"
+          >Register</a
+        >
+      </li>
+      <li *ngIf="isAuthenticated()">
+        <button
+          (click)="logout()"
+          class="bg-red-500 px-3 py-1 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+      </li>
+    </ul>
+  </nav>
+</header>
