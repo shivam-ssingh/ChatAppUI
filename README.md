@@ -29,3 +29,5 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 https://danielk.tech/home/angular-login-form-with-tailwind-css
 
 https://medium.com/@gabrielbastosdeveloper/real-time-application-development-with-signalr-and-angular-74c7d869afaf
+
+https://damienbod.com/2018/05/13/uploading-and-sending-image-messages-with-asp-net-core-signalr/

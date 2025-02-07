@@ -30,7 +30,7 @@ export class LoginComponent {
       await this.authService.login(this.email, this.password);
       this.router.navigate(['/chat']);
     } catch (error: any) {
-      this.errorMessage = error.error.Error || 'Login failed';
+      this.errorMessage = error.error.error || 'Login failed';
     }
   }
 

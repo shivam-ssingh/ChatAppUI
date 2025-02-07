@@ -33,7 +33,7 @@ export class RegisterComponent {
       );
       this.router.navigate(['/chat']);
     } catch (error: any) {
-      this.errorMessage = error.error.Error || 'Registration failed';
+      this.errorMessage = error.error.error || 'Registration failed';
     }
   }
 

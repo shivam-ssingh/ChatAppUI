@@ -2,11 +2,20 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+interface UserDetails {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private tokenKey = 'authToken';
+  private userDetailKey = 'userDetail';
   private apiUrl = 'https://localhost:7247/';
   isAuthenticated = signal(this.hasToken());
 
@@ -33,7 +42,11 @@ export class AuthService {
           userName: userName,
         })
       );
-      localStorage.setItem(this.tokenKey, response.AuthToken);
+      localStorage.setItem(this.tokenKey, response.authToken);
+      localStorage.setItem(
+        this.userDetailKey,
+        JSON.stringify(response.userDetails)
+      );
       this.isAuthenticated.set(true);
     } catch (error) {
       console.log(error);
@@ -49,7 +62,11 @@ export class AuthService {
           password: password,
         })
       );
-      localStorage.setItem(this.tokenKey, response.AuthToken);
+      localStorage.setItem(this.tokenKey, response.authToken);
+      localStorage.setItem(
+        this.userDetailKey,
+        JSON.stringify(response.userDetails)
+      );
       this.isAuthenticated.set(true);
     } catch (error) {
       console.log(error);
@@ -59,6 +76,7 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.userDetailKey);
     this.isAuthenticated.set(false);
   }
 }
