@@ -50,12 +50,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  onLeaveChat() {
-    this.hasJoined = false;
-    // this.username = '';
-    this.chatRoom = '';
-  }
-
   private async setupSignalRConnection() {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl('https://localhost:7247/chat')
@@ -107,8 +101,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   leave() {
     if (this.hubConnection) {
       this.hubConnection.stop();
+      this.isConnected = false;
+      this.hasJoined = false;
     }
-    // this.leaveChat.emit();
   }
 
   private scrollToBottom() {
