@@ -31,7 +31,7 @@ export class RegisterComponent {
         this.lastName,
         this.userName
       );
-      this.router.navigate(['/chat']);
+      this.router.navigate(['/add-key']);
     } catch (error: any) {
       this.errorMessage = error.error.error || 'Registration failed';
     }

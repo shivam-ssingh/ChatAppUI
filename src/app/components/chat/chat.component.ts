@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { CryptoService } from '../../services/crypto.service';
 
 interface ChatMessage {
   user: string;
@@ -16,6 +17,15 @@ interface UserDetails {
   firstName: string;
   lastName: string;
   userName: string;
+}
+
+interface UserInRoom {
+  userName: string;
+  publicKey: string;
+}
+
+interface NewJoinee {
+  [userName: string]: string;
 }
 
 @Component({
@@ -36,6 +46,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   isConnected = false;
   userDetails = {} as UserDetails;
   private userDetailKey = 'userDetail';
+  private usersInRoom: UserInRoom[] = [];
+  private newJoinee: NewJoinee = {} as NewJoinee;
+  private cryptoService = inject(CryptoService);
 
   ngOnInit(): void {
     this.userDetails = JSON.parse(
@@ -52,7 +65,9 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private async setupSignalRConnection() {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl('https://localhost:7247/chat')
+      .withUrl('https://localhost:7247/chat', {
+        accessTokenFactory: () => localStorage.getItem('authToken') || '',
+      })
       .withAutomaticReconnect()
       .build();
 
@@ -66,6 +81,56 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.scrollToBottom();
     });
 
+    //store each new users in room with their public key
+    this.hubConnection.on('NewJoinee', (publicKeyDetail: NewJoinee) => {
+      this.newJoinee = publicKeyDetail;
+      // publicKeyDetail.forEach((userDetail) => {
+      //   let userInRoom: UserInRoom = {
+      //     userName: Object.keys(userDetail)[0],
+      //     publicKey: Object.values(userDetail)[0],
+      //   };
+      //   debugger;
+      //   this.usersInRoom.push(userInRoom);
+      // });
+      // console.log('hello');
+      // console.log(this.usersInRoom);
+    });
+
+    this.hubConnection.on(
+      'ReceiveEncryptedMessage',
+      async (user: string, message: string) => {
+        try {
+          //load public key
+          const privateKeyDecrypted =
+            await this.cryptoService.decryptPrivateKey(
+              localStorage.getItem('privateKey') || ''
+            );
+          const privateKeyLoaded = await this.cryptoService.importPrivateKey(
+            privateKeyDecrypted
+          );
+          const decryptedMessage = await this.cryptoService.decryptMessage(
+            privateKeyLoaded,
+            message
+          );
+          this.messages.push({
+            user,
+            message: `encrypted message recived -> ${message}`,
+            timestamp: new Date(),
+            isSystemMessage: user.toLowerCase() === 'admin',
+          });
+          this.messages.push({
+            user,
+            message: decryptedMessage,
+            timestamp: new Date(),
+            isSystemMessage: user.toLowerCase() === 'admin',
+          });
+          this.scrollToBottom();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    );
+
     try {
       await this.hubConnection.start();
       this.isConnected = true;
@@ -73,6 +138,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       await this.hubConnection.invoke('JoinSpecificChatRoom', {
         userName: this.userDetails.userName,
         chatRoom: this.chatRoom,
+        publicKey: localStorage.getItem('publicKey'),
       });
     } catch (err) {
       console.error('Error while connecting to chat: ', err);
@@ -96,6 +162,72 @@ export class ChatComponent implements OnInit, OnDestroy {
         console.error('Error while sending message: ', err);
       }
     }
+  }
+
+  async sendMessageToRoom() {
+    // for (const key in this.newJoinee) {
+    //   let userInRoom: UserInRoom = {
+    //     userName: key,
+    //     publicKey: this.newJoinee[key] || '',
+    //   };
+    //   this.usersInRoom.push(userInRoom);
+    // }
+    for (const key in this.newJoinee) {
+      const encryptedMessage = await this.encryptMessage(
+        this.newJoinee[key],
+        this.newMessage.trim()
+      );
+      await this.hubConnection.invoke(
+        'SendMessageToSpecificUser',
+        {
+          userName: this.userDetails.userName,
+          chatRoom: this.chatRoom,
+        },
+        encryptedMessage,
+        key
+      );
+    }
+    this.messages.push({
+      user: this.userDetails.userName,
+      message: this.newMessage.trim(),
+      timestamp: new Date(),
+      isSystemMessage: this.userDetails.userName.toLowerCase() === 'admin',
+    });
+    this.newMessage = '';
+    // this.usersInRoom.forEach(async (userDet) => {
+    //   const encryptedMessage = await this.encryptMessage(
+    //     userDet.publicKey,
+    //     this.newMessage.trim()
+    //   );
+    //   await this.hubConnection.invoke(
+    //     'SendMessageToSpecificUser',
+    //     {
+    //       userName: this.userDetails.userName,
+    //       chatRoom: this.chatRoom,
+    //     },
+    //     encryptedMessage,
+    //     userDet.userName
+    //   );
+    //   const addMessage = this.newMessage;
+    //   const user = this.userDetails.userName;
+    //   this.messages.push({
+    //     user,
+    //     message: addMessage,
+    //     timestamp: new Date(),
+    //     isSystemMessage: user.toLowerCase() === 'admin',
+    //   });
+    //   this.newMessage = '';
+    // });
+  }
+  async encryptMessage(publicKey: string, message: string) {
+    const importedPublickey = await this.cryptoService.importPublicKey(
+      publicKey
+    );
+    const encryptedMessage = await this.cryptoService.encryptMessage(
+      importedPublickey,
+      message
+    );
+    return encryptedMessage;
   }
 
   leave() {

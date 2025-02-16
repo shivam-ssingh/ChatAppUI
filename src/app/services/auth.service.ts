@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { CryptoService } from './crypto.service';
 
 interface UserDetails {
   id: string;
@@ -18,6 +19,7 @@ export class AuthService {
   private userDetailKey = 'userDetail';
   private apiUrl = 'https://localhost:7247/';
   isAuthenticated = signal(this.hasToken());
+  private cryptoService = inject(CryptoService);
 
   constructor(private http: HttpClient) {}
 
@@ -48,6 +50,7 @@ export class AuthService {
         JSON.stringify(response.userDetails)
       );
       this.isAuthenticated.set(true);
+      await this.cryptoService.generateMasterKey();
     } catch (error) {
       console.log(error);
       throw error;
@@ -68,6 +71,7 @@ export class AuthService {
         JSON.stringify(response.userDetails)
       );
       this.isAuthenticated.set(true);
+      await this.cryptoService.generateMasterKey();
     } catch (error) {
       console.log(error);
       throw error;
@@ -77,6 +81,9 @@ export class AuthService {
   logout() {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userDetailKey);
+    localStorage.removeItem('publicKey');
+    localStorage.removeItem('privateKey');
+    this.cryptoService.clearMasterKey();
     this.isAuthenticated.set(false);
   }
 }

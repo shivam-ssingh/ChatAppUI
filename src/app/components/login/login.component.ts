@@ -28,7 +28,7 @@ export class LoginComponent {
   async login() {
     try {
       await this.authService.login(this.email, this.password);
-      this.router.navigate(['/chat']);
+      this.router.navigate(['/add-key']);
     } catch (error: any) {
       this.errorMessage = error.error.error || 'Login failed';
     }

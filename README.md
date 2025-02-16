@@ -31,3 +31,21 @@ https://danielk.tech/home/angular-login-form-with-tailwind-css
 https://medium.com/@gabrielbastosdeveloper/real-time-application-development-with-signalr-and-angular-74c7d869afaf
 
 https://damienbod.com/2018/05/13/uploading-and-sending-image-messages-with-asp-net-core-signalr/
+
+# Window Crypto APIs
+
+[Youtube Vid of a talk talking about crypto apis.](https://www.youtube.com/watch?v=cZTHGPn1jdU)
+
+_APIs present for crypto.subtle:_
+![Crypto APIs](learnings/image.png)
+
+RSA -> Asymmetrical Algorithm.
+AES -> Symmetrical Algorithm.
+
+_AES Algorithms and their properties:_
+![AES Algorithms ](learnings/AES-Algo.png)
+
+> By Integrity and Authenticity mentioned here, it means if a data is encrypted with AES-GCM, the decryption fails hence offering more security.
+
+//article on import
+https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#pkcs_8
