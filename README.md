@@ -51,3 +51,6 @@ _AES Algorithms and their properties:_
 
 //article on import
 https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#pkcs_8
+
+//Reference for an E2EE chat app in angular
+https://github.dev/wiringbits/safer.chat/blob/master/web/src/app/components/chat/chat.component.ts

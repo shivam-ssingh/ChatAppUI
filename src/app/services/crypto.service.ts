@@ -8,6 +8,8 @@ export class CryptoService {
   private decoder = new TextDecoder();
   private masterKey!: CryptoKey;
 
+  //TODO: Save the public key and encrypted Private key in indexed db for more safety
+
   // encrypting the message with public key
   async encryptMessage(publicKey: CryptoKey, message: string): Promise<string> {
     const encryptedData = await crypto.subtle.encrypt(
