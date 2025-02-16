@@ -8,7 +8,7 @@ export class CryptoService {
   private decoder = new TextDecoder();
   private masterKey!: CryptoKey;
 
-  /** 🔹 Encrypt Message Before Sending */
+  // encrypting the message with public key
   async encryptMessage(publicKey: CryptoKey, message: string): Promise<string> {
     const encryptedData = await crypto.subtle.encrypt(
       { name: 'RSA-OAEP' },
@@ -18,7 +18,7 @@ export class CryptoService {
     return this.arrayBufferToBase64(encryptedData);
   }
 
-  /** 🔹 Decrypt Received Message */
+  // encrypting the message with private key
   async decryptMessage(
     privateKey: CryptoKey,
     encryptedMessage: string
