@@ -54,3 +54,8 @@ https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#pkcs_8
 
 //Reference for an E2EE chat app in angular
 https://github.dev/wiringbits/safer.chat/blob/master/web/src/app/components/chat/chat.component.ts
+
+openssl genrsa -out user1-private.pem 2048
+openssl rsa -in user1-private.pem -pubout -out user1-public.pem
+
+cp user1-public.pem user1-p /mnt/c/Users/Shivam/keys
