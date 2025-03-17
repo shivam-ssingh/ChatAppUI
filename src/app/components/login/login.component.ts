@@ -37,4 +37,11 @@ export class LoginComponent {
   navigateToRegister() {
     this.router.navigate(['/register']);
   }
+
+  loginWithGitHub() {
+    let scope = 'read:user user:email';
+    let clientId = 'Ov23liPxyE4aelFp6X3Y';
+    let redirectUri = 'http://localhost:4200/handle-callback';
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+  }
 }

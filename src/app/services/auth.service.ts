@@ -17,7 +17,7 @@ interface UserDetails {
 export class AuthService {
   private tokenKey = 'authToken';
   private userDetailKey = 'userDetail';
-  private apiUrl = 'https://localhost:7247/';
+  private apiUrl = 'https://chatapi-jm0g.onrender.com/';
   isAuthenticated = signal(this.hasToken());
   private cryptoService = inject(CryptoService);
 
@@ -85,5 +85,18 @@ export class AuthService {
     localStorage.removeItem('privateKey');
     this.cryptoService.clearMasterKey();
     this.isAuthenticated.set(false);
+  }
+
+  async handleGitHubCallback(code: string) {
+    const response: any = await firstValueFrom(
+      await this.http.get(`${this.apiUrl}User/GithubCallback?code=${code}`)
+    );
+    localStorage.setItem(this.tokenKey, response.authToken);
+    localStorage.setItem(
+      this.userDetailKey,
+      JSON.stringify(response.userDetails)
+    );
+    this.isAuthenticated.set(true);
+    await this.cryptoService.generateMasterKey();
   }
 }

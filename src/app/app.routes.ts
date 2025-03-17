@@ -3,6 +3,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { ChatComponent } from './components/chat/chat.component';
 import { AddKeyComponent } from './components/add-key/add-key.component';
+import { HandleCallbackComponent } from './components/handle-callback/handle-callback.component';
 
 export const routes: Routes = [
   {
@@ -24,5 +25,9 @@ export const routes: Routes = [
   {
     path: 'add-key',
     component: AddKeyComponent,
+  },
+  {
+    path: 'handle-callback',
+    component: HandleCallbackComponent,
   },
 ];

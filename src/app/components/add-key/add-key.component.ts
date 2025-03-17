@@ -29,6 +29,16 @@ export class AddKeyComponent implements OnInit {
   private router = inject(Router);
   private cryptoService = inject(CryptoService);
 
+  selectedOption: string | null = null;
+  publicKey: string | null = null;
+  repoName: string = '';
+  gistId: string = '';
+  keyName: string = '';
+  gistFileName: string = '';
+  canProceed: boolean = false;
+  publicKeyRetrieved: boolean = false;
+  privateKeyRetrived: boolean = false;
+
   constructor(private http: HttpClient) {}
 
   async ngOnInit() {
@@ -36,6 +46,11 @@ export class AddKeyComponent implements OnInit {
       localStorage.getItem(this.userDetailKey) || '{}'
     ); //https://stackoverflow.com/questions/46915002/argument-of-type-string-null-is-not-assignable-to-parameter-of-type-string
     await this.cryptoService.generateMasterKey(); // remove this
+  }
+
+  selectOption(option: string) {
+    this.selectedOption = option;
+    this.publicKey = null; // Reset public key display when changing options
   }
 
   async addKey() {
@@ -57,6 +72,7 @@ export class AddKeyComponent implements OnInit {
           await this.cryptoService.encryptPrivateKey(reader.result as string)
         );
         this.privateKey = 'abc';
+        this.privateKeyRetrived = true;
       };
 
       reader.readAsText(file);
@@ -75,5 +91,44 @@ export class AddKeyComponent implements OnInit {
     } catch (error) {
       throw new Error('Public key not found for user');
     }
+  }
+
+  async retrieveFromRepo() {
+    const url = `https://raw.githubusercontent.com/${this.userDetails.userName}/${this.repoName}/main/${this.keyName}`;
+    try {
+      const publicKeyPem = await firstValueFrom(
+        this.http.get(url, { responseType: 'text' })
+      );
+      localStorage.setItem('publicKey', publicKeyPem);
+      this.publicKeyRetrieved = true;
+    } catch (error) {
+      throw new Error('Public key not found for user');
+    }
+  }
+
+  async retrieveFromGist() {
+    const url = `https://api.github.com/gists/${this.gistId}`;
+    try {
+      const gistResponse: any = await firstValueFrom(
+        this.http.get(url, { responseType: 'text' })
+      );
+      const gistData = JSON.parse(gistResponse);
+      console.log(gistData);
+      if (gistData.files && gistData.files[this.gistFileName]) {
+        localStorage.setItem(
+          'publicKey',
+          gistData.files[this.gistFileName].content
+        );
+        this.publicKeyRetrieved = true;
+      } else {
+        throw new Error('Public key not found for user');
+      }
+    } catch (error) {
+      throw new Error('Public key not found for user');
+    }
+  }
+
+  proceed() {
+    this.router.navigate(['/chat']);
   }
 }

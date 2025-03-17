@@ -16,23 +16,23 @@
           routerLink="/login"
           *ngIf="!isAuthenticated()"
           class="hover:text-gray-300"
-          >Login</a
+          >Sign In</a
         >
       </li>
-      <li>
+      <!-- <li>
         <a
           routerLink="/register"
           *ngIf="!isAuthenticated()"
           class="hover:text-gray-300"
           >Register</a
         >
-      </li>
+      </li> -->
       <li *ngIf="isAuthenticated()">
         <button
           (click)="logout()"
           class="bg-red-500 px-3 py-1 rounded hover:bg-red-600"
         >
-          Logout
+          Sign Out
         </button>
       </li>
     </ul>

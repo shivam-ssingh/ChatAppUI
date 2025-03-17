@@ -1,4 +1,4 @@
-<div class="flex flex-col items-center justify-center min-h-screen">
+<!-- <div class="flex flex-col items-center justify-center min-h-screen">
   <div class="w-full max-w-md bg-white rounded-lg shadow-md p-6">
     <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">
       Keys for Encryption
@@ -39,6 +39,7 @@
           class="w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
+
       <div>
         <label
           for="chatroom"
@@ -62,5 +63,137 @@
         Add Key
       </button>
     </form>
+  </div>
+</div> -->
+
+<div class="flex justify-center items-center min-h-screen bg-gray-100">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+    <!-- Welcome Message -->
+    <h1 class="text-2xl font-semibold text-center text-gray-800 mb-6">
+      Welcome, {{ userDetails.userName }}!
+    </h1>
+
+    <h3
+      *ngIf="publicKeyRetrieved"
+      class="text-2xl font-semibold text-center text-gray-800 mb-6"
+    >
+      Your Public key has been retrieved!
+    </h3>
+    <div *ngIf="!publicKeyRetrieved">
+      <!-- Option Buttons -->
+      <div class="mb-4">
+        <p class="text-lg font-medium text-gray-800">
+          Choose where to retrieve your public key from:
+        </p>
+
+        <!-- Gist Option -->
+        <button
+          type="button"
+          (click)="selectOption('gist')"
+          class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg mt-4 hover:bg-blue-700 transition duration-200"
+        >
+          Retrieve from Gist
+        </button>
+
+        <!-- Repo Option -->
+        <button
+          type="button"
+          (click)="selectOption('repo')"
+          class="w-full bg-green-600 text-white py-2 px-4 rounded-lg mt-4 hover:bg-green-700 transition duration-200"
+        >
+          Retrieve from Repository
+        </button>
+      </div>
+
+      <!-- Form for Repository (if selected) -->
+      <div *ngIf="selectedOption === 'repo'" class="mt-6">
+        <p class="text-lg font-medium text-gray-800 mb-4">
+          Enter your GitHub repository name and key file name:
+        </p>
+        <input
+          type="text"
+          [(ngModel)]="repoName"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
+          placeholder="e.g., repo-name"
+        />
+        <input
+          type="text"
+          [(ngModel)]="keyName"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
+          placeholder="e.g., public-chatkey.pem"
+        />
+
+        <button
+          type="button"
+          (click)="retrieveFromRepo()"
+          class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200"
+        >
+          Retrieve Key from Repository
+        </button>
+      </div>
+
+      <!-- Form for Gist (if selected) -->
+      <div *ngIf="selectedOption === 'gist'" class="mt-6">
+        <p class="text-lg font-medium text-gray-800 mb-4">
+          Enter your Gist ID:
+        </p>
+        <input
+          type="text"
+          [(ngModel)]="gistId"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
+          placeholder="e.g., Gist ID"
+        />
+        <input
+          type="text"
+          [(ngModel)]="gistFileName"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
+          placeholder="e.g., public-chatkey.pem"
+        />
+
+        <button
+          type="button"
+          (click)="retrieveFromGist()"
+          class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
+        >
+          Retrieve Key from Gist
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!privateKeyRetrived">
+      <!-- Upload Private Key -->
+      <div *ngIf="publicKeyRetrieved" class="mt-6">
+        <p class="text-lg font-medium text-gray-800 mb-4">
+          Upload your private key:
+        </p>
+        <input
+          type="file"
+          (change)="handleFileUpload($event)"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
+        />
+
+        <!-- <button type="button" (click)="uploadPrivateKey()" class="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition duration-200">
+    Upload Private Key
+  </button> -->
+      </div>
+    </div>
+
+    <h3
+      *ngIf="privateKeyRetrived"
+      class="text-2xl font-semibold text-center text-gray-800 mb-6"
+    >
+      Your Private key has been added!
+    </h3>
+
+    <!-- Proceed Button -->
+    <div *ngIf="privateKeyRetrived" class="mt-6">
+      <button
+        type="button"
+        (click)="proceed()"
+        class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200"
+      >
+        Proceed
+      </button>
+    </div>
   </div>
 </div>

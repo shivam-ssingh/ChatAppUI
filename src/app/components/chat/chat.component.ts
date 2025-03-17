@@ -65,7 +65,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private async setupSignalRConnection() {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl('https://localhost:7247/chat', {
+      .withUrl('https://chatapi-jm0g.onrender.com/chat', {
         accessTokenFactory: () => localStorage.getItem('authToken') || '',
       })
       .withAutomaticReconnect()
