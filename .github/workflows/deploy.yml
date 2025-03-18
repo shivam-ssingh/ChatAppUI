@@ -4,10 +4,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Deploy to Render
-        run: |
-          curl -X POST "https://api.render.com/deploy/srv-cvcret3tq21c73dknqv0?key=${{ secrets.RENDER_DEPLOY_KEY }}"
+      - name: Deploy to production
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.MY_RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.MY_RENDER_API_KEY }}
