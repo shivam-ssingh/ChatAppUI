@@ -16,9 +16,10 @@ export class HandleCallbackComponent implements OnInit {
     private router: Router
   ) {}
 
+  message = 'Please wait...';
+  isError = false;
   async ngOnInit() {
     try {
-      // if (!this.authService.isAuthenticated)
       {
         await this.authService.handleGitHubCallback(
           this.route.snapshot.queryParamMap.get('code') || ''
@@ -27,6 +28,7 @@ export class HandleCallbackComponent implements OnInit {
       this.router.navigate(['/add-key']);
     } catch (error) {
       console.log('Login Fail');
+      this.message = 'Some Error Occured';
     }
   }
 }
