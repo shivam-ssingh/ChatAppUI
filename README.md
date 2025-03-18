@@ -67,3 +67,5 @@ cp user1-public.pem user1-p /mnt/c/Users/Shivam/keys
 https://dev.to/oneofthedevs/docker-angular-nginx-37e4
 
 https://www.youtube.com/watch?v=-o5l6zFJ9_o
+
+https://github.com/marketplace/actions/render-deploy-action
