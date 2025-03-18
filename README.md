@@ -32,7 +32,7 @@ https://medium.com/@gabrielbastosdeveloper/real-time-application-development-wit
 
 https://damienbod.com/2018/05/13/uploading-and-sending-image-messages-with-asp-net-core-signalr/
 
-https://medium.com/@tony.infisical/guide-to-nodes-crypto-module-for-encryption-decryption-65c077176980
+## https://medium.com/@tony.infisical/guide-to-nodes-crypto-module-for-encryption-decryption-65c077176980
 
 # Window Crypto APIs
 
@@ -59,3 +59,8 @@ openssl genrsa -out user1-private.pem 2048
 openssl rsa -in user1-private.pem -pubout -out user1-public.pem
 
 cp user1-public.pem user1-p /mnt/c/Users/Shivam/keys
+
+## Dockerize Angular
+
+https://dev.to/oneofthedevs/docker-angular-nginx-37e4
+https://www.youtube.com/watch?v=-o5l6zFJ9_o
