@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-handle-callback',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './handle-callback.component.html',
   styleUrl: './handle-callback.component.css',
 })
@@ -29,6 +30,7 @@ export class HandleCallbackComponent implements OnInit {
     } catch (error) {
       console.log('Login Fail');
       this.message = 'Some Error Occured';
+      this.isError = true;
     }
   }
 }
