@@ -41,7 +41,7 @@ export class LoginComponent {
   loginWithGitHub() {
     let scope = 'read:user user:email';
     let clientId = 'Ov23liPxyE4aelFp6X3Y';
-    let redirectUri = 'http://localhost:4200/handle-callback';
+    let redirectUri = 'https://chatapi-jm0g.onrender.com/handle-callback';
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
   }
 }
