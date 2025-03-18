@@ -1,0 +1,13 @@
+name: Deploy Chat UI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Render
+        run: |
+          curl -X POST "https://api.render.com/deploy/srv-cvcret3tq21c73dknqv0?key=${{ secrets.RENDER_DEPLOY_KEY }}"
