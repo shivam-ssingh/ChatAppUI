@@ -112,12 +112,13 @@ export class ChatComponent implements OnInit, OnDestroy {
             privateKeyLoaded,
             message
           );
-          this.messages.push({
-            user,
-            message: `encrypted message recived -> ${message}`,
-            timestamp: new Date(),
-            isSystemMessage: user.toLowerCase() === 'admin',
-          });
+          // this.messages.push(
+          //   {
+          //   user,
+          //   message: `encrypted message recived -> ${message}`,
+          //   timestamp: new Date(),
+          //   isSystemMessage: user.toLowerCase() === 'admin',
+          // });
           this.messages.push({
             user,
             message: decryptedMessage,
