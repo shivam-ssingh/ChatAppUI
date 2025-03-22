@@ -101,7 +101,8 @@ export class FileShareComponent {
       return;
     }
 
-    this.fileShareService.sendFile(this.selectedFile()!);
+    // this.fileShareService.sendFile(this.selectedFile()!);
+    this.fileShareService.sendEncryptedFile(this.selectedFile()!);
   }
 
   private handleReceivedFile(file: { name: string; data: Blob }): void {

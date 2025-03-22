@@ -1,5 +1,6 @@
 import { Injectable, NgZone, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { CryptoService } from './crypto.service';
 
 interface UserDetails {
   id: string;
@@ -7,6 +8,15 @@ interface UserDetails {
   firstName: string;
   lastName: string;
   userName: string;
+}
+
+interface FileInfo {
+  type: string;
+  name: string;
+  size: number;
+  contentType: string;
+  encryptedKey: string;
+  iv: number[];
 }
 
 @Injectable({
@@ -27,15 +37,16 @@ export class FileshareService {
   private fileSize: number = 0;
   private currentFile: File | null = null;
   connectedUsers = signal<string[]>([]);
-
+  connectedUserPublicKeys: string[] = [];
   userDetails = {} as UserDetails;
   private userDetailKey = 'userDetail';
-
-  constructor(private zone: NgZone) {
+  private receivedEncryptedKey = '';
+  private receivedIV: number[] = [];
+  constructor(private cryptoService: CryptoService) {
     this.userDetails = JSON.parse(
       localStorage.getItem(this.userDetailKey) || '{}'
     );
-    console.log(this.userDetails);
+    // console.log(this.userDetails);
 
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`https://localhost:7247/fileHub`)
@@ -46,19 +57,32 @@ export class FileshareService {
   }
 
   private setupSignalRHandlers() {
-    this.hubConnection.on('PeerJoined', (peerId, userIdentifier: string) => {
-      console.log('Peer joined session:', peerId, userIdentifier);
-      this.connectionStatus.set('peer_joined');
+    this.hubConnection.on(
+      'PeerJoined',
+      (
+        peerId,
+        userIdentifier: string,
+        allUserPublicKeys,
+        creatorUserId: string
+      ) => {
+        this.connectedUserPublicKeys = allUserPublicKeys['publicKey'].filter(
+          (x: string | null) => x != localStorage.getItem('publicKey')
+        );
 
-      this.zone.run(() => {
+        this.connectionStatus.set('peer_joined');
+
+        //https://stackoverflow.com/a/76196175
         this.connectedUsers.update((users) => [...users, userIdentifier]);
-        console.log('Connected users..........', this.connectedUsers());
-      });
 
-      if (this.isInitiator) {
-        this.createOffer();
+        if (this.connectedUsers().indexOf(creatorUserId) == -1) {
+          this.connectedUsers.update((users) => [...users, creatorUserId]);
+        }
+
+        if (this.isInitiator) {
+          this.createOffer();
+        }
       }
-    });
+    );
 
     this.hubConnection.on('ReceiveOffer', async (offer, peerId) => {
       console.log('Received WebRTC offer:', offer);
@@ -127,11 +151,19 @@ export class FileshareService {
         await this.connect();
       }
 
-      this.sessionId = await this.hubConnection.invoke('CreateSession');
+      this.sessionId = await this.hubConnection.invoke(
+        'CreateSession',
+        localStorage.getItem('publicKey'),
+        this.userDetails.userName
+      );
       console.log('Created new session with ID:', this.sessionId);
 
       this.isInitiator = true;
       this.connectionStatus.set('waiting_for_peer');
+      this.connectedUsers.update((users) => [
+        ...users,
+        this.userDetails.userName,
+      ]);
 
       return this.sessionId;
     } catch (err) {
@@ -162,7 +194,8 @@ export class FileshareService {
       const result = await this.hubConnection.invoke(
         'JoinSpecificSession',
         sessionId,
-        this.userDetails.userName
+        this.userDetails.userName,
+        localStorage.getItem('publicKey')
       );
 
       if (result.success) {
@@ -274,26 +307,46 @@ export class FileshareService {
     };
 
     // Handle incoming file data
-    this.dataChannel.onmessage = (event) => {
+    this.dataChannel.onmessage = async (event) => {
       // Check if it's a control message (JSON) or file data (ArrayBuffer)
       if (typeof event.data === 'string') {
         const message = JSON.parse(event.data);
 
         if (message.type === 'file-info') {
+          const fileInfo: FileInfo = JSON.parse(event.data);
           // New file transfer is starting
           this.resetFileReceive();
           this.fileSize = message.size;
+          this.receivedEncryptedKey = message.encryptedKey;
+          this.receivedIV = fileInfo.iv;
           console.log(
             `Receiving file: ${message.name}, size: ${message.size} bytes`
           );
         } else if (message.type === 'file-complete') {
           // File transfer is complete, assemble the chunks
           const receivedBlob = new Blob(this.receiveBuffer);
+          const arrayBuffer = await receivedBlob.arrayBuffer();
           this.receiveBuffer = [];
+
+          //decryption process
+          const privateKeyDecrypted =
+            await this.cryptoService.decryptPrivateKey(
+              localStorage.getItem('privateKey') || ''
+            );
+          const privateKeyLoaded = await this.cryptoService.importPrivateKey(
+            privateKeyDecrypted
+          );
+          const decryptedArrayBuffer = await this.cryptoService.decryptFile(
+            privateKeyLoaded,
+            this.receivedEncryptedKey,
+            arrayBuffer,
+            this.receivedIV
+          );
+          const receivedDecryptedBlob = new Blob([decryptedArrayBuffer]);
           // Notify the UI that a file has been received
           this.receivedFile.set({
             name: message.name,
-            data: receivedBlob,
+            data: receivedDecryptedBlob,
           });
 
           this.transferProgress.set(0);
@@ -385,5 +438,78 @@ export class FileshareService {
 
     // Start reading the first chunk
     readSlice(0);
+  }
+
+  public async sendEncryptedFile(file: File): Promise<void> {
+    if (!this.dataChannel || this.dataChannel.readyState !== 'open') {
+      this.errorMessage.set('No connection or public key available');
+      return;
+    }
+
+    this.currentFile = file;
+
+    try {
+      const fileData = await this.readFileAsArrayBuffer(file);
+
+      // Encrypt the file
+      const { encryptedKey, encryptedFile, iv } =
+        await this.cryptoService.encryptFile(
+          await this.cryptoService.importPublicKey(
+            this.connectedUserPublicKeys[0]
+          ),
+          fileData
+        );
+
+      const fileInfo = {
+        type: 'file-info',
+        name: file.name,
+        size: encryptedFile.byteLength,
+        contentType: file.type,
+        encryptedKey,
+        iv: Array.from(iv), // Convert to array for JSON serialization
+      };
+
+      this.dataChannel.send(JSON.stringify(fileInfo));
+
+      const chunkSize = 16384;
+      const encryptedDataArray = new Uint8Array(encryptedFile);
+      const totalSize = encryptedDataArray.length;
+      for (let offset = 0; offset < totalSize; offset += chunkSize) {
+        // It is possible the last chunk not be the same size as offset which could cause issues.
+        const end = Math.min(offset + chunkSize, totalSize);
+        const chunk = encryptedDataArray.slice(offset, end);
+
+        while (this.dataChannel.bufferedAmount > 65535) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        this.dataChannel.send(chunk.buffer);
+
+        const progress = Math.floor((end / totalSize) * 100);
+        this.transferProgress.set(progress);
+        console.log(`Sent ${end} / ${totalSize} bytes (${progress}%)`);
+      }
+
+      this.dataChannel.send(
+        JSON.stringify({
+          type: 'file-complete',
+          name: file.name,
+        })
+      );
+
+      console.log(`File "${file.name}" sent encrypted successfully`);
+      this.currentFile = null;
+    } catch (error) {
+      console.error('Encryption error:', error);
+    }
+  }
+
+  private readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
   }
 }

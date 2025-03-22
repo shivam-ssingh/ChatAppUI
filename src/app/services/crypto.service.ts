@@ -149,4 +149,84 @@ export class CryptoService {
     sessionStorage.removeItem('masterKey');
     this.masterKey = null as any;
   }
+
+  // encrypting file
+  async encryptFile(
+    publicKey: CryptoKey,
+    fileData: ArrayBuffer
+  ): Promise<{
+    encryptedKey: string;
+    encryptedFile: ArrayBuffer;
+    iv: Uint8Array;
+  }> {
+    const aesKey = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt', 'decrypt']
+    );
+
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    // Encryptin the file:
+    const encryptedFile = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      aesKey,
+      fileData
+    );
+
+    const exportedKey = await crypto.subtle.exportKey('raw', aesKey);
+
+    // Encrypt the AES key with the RSA public key
+    const encryptedKey = await crypto.subtle.encrypt(
+      { name: 'RSA-OAEP' },
+      publicKey,
+      exportedKey
+    );
+
+    return {
+      encryptedKey: this.arrayBufferToBase64(encryptedKey),
+      encryptedFile,
+      iv,
+    };
+  }
+
+  async decryptFile(
+    privateKey: CryptoKey,
+    encryptedKeyBase64: string,
+    encryptedData: ArrayBuffer,
+    ivArray: number[]
+  ): Promise<ArrayBuffer> {
+    try {
+      const encryptedKey = this.base64ToArrayBuffer(encryptedKeyBase64);
+
+      // Convert IV array back to Uint8Array
+      const iv = new Uint8Array(ivArray);
+
+      // Decrypt the AES key using private key
+      const decryptedKeyBuffer = await crypto.subtle.decrypt(
+        { name: 'RSA-OAEP' },
+        privateKey,
+        encryptedKey
+      );
+
+      const aesKey = await crypto.subtle.importKey(
+        'raw',
+        decryptedKeyBuffer,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
+
+      const decryptedData = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        aesKey,
+        encryptedData
+      );
+
+      return decryptedData;
+    } catch (error) {
+      console.error('Decryption error:', error);
+      throw error;
+    }
+  }
 }

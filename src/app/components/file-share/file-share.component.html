@@ -3,16 +3,18 @@
     Secure P2P File Transfer
   </h1>
 
-  <div class="mt-4 p-4 bg-white shadow-md rounded-lg">
-    <h2 class="text-lg font-semibold mb-2">Connected Users</h2>
-    <!-- User Chips Display -->
-    <div class="flex flex-wrap gap-2">
-      <span
-        *ngFor="let user of fileShareService.connectedUsers()"
-        class="px-3 py-1 bg-blue-500 text-white rounded-full flex items-center"
-      >
-        {{ user }}
-      </span>
+  <div *ngIf="fileShareService.connectedUsers().length > 0">
+    <div class="mt-4 p-4 bg-white shadow-md rounded-lg">
+      <h2 class="text-lg font-semibold mb-2">Connected Users</h2>
+      <!-- User Chips Display -->
+      <div class="flex flex-wrap gap-2">
+        <span
+          *ngFor="let user of fileShareService.connectedUsers()"
+          class="px-3 py-1 bg-blue-500 text-white rounded-full flex items-center"
+        >
+          {{ user }}
+        </span>
+      </div>
     </div>
   </div>
 
