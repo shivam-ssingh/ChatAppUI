@@ -4,6 +4,7 @@ import { RegisterComponent } from './components/register/register.component';
 import { ChatComponent } from './components/chat/chat.component';
 import { AddKeyComponent } from './components/add-key/add-key.component';
 import { HandleCallbackComponent } from './components/handle-callback/handle-callback.component';
+import { FileShareComponent } from './components/file-share/file-share.component';
 
 export const routes: Routes = [
   {
@@ -29,5 +30,9 @@ export const routes: Routes = [
   {
     path: 'handle-callback',
     component: HandleCallbackComponent,
+  },
+  {
+    path: 'file-share',
+    component: FileShareComponent,
   },
 ];

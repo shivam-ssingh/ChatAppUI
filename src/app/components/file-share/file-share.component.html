@@ -1,0 +1,201 @@
+<div class="container mx-auto max-w-4xl p-6 bg-gray-100 rounded-lg shadow-lg">
+  <h1 class="text-2xl font-bold text-center text-gray-800">
+    Secure P2P File Transfer
+  </h1>
+
+  <div class="mt-4 p-4 bg-white shadow-md rounded-lg">
+    <h2 class="text-lg font-semibold mb-2">Connected Users</h2>
+    <!-- User Chips Display -->
+    <div class="flex flex-wrap gap-2">
+      <span
+        *ngFor="let user of fileShareService.connectedUsers()"
+        class="px-3 py-1 bg-blue-500 text-white rounded-full flex items-center"
+      >
+        {{ user }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Status Indicator -->
+  <div
+    class="mt-4 p-3 rounded-lg text-white text-center"
+    [ngClass]="{
+      'bg-red-500': fileShareService.connectionStatus() === 'disconnected',
+      'bg-green-500':
+        fileShareService.connectionStatus() === 'connected' ||
+        fileShareService.connectionStatus() === 'data_channel_open',
+      'bg-yellow-500':
+        fileShareService.connectionStatus() === 'waiting_for_peer' ||
+        fileShareService.connectionStatus() === 'connecting'
+    }"
+  >
+    {{ fileShareService.connectionStatus() }}
+  </div>
+
+  <!-- Error Message Display -->
+  <div
+    *ngIf="fileShareService.errorMessage()"
+    class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center"
+  >
+    <i class="material-icons mr-2">error</i>
+    <span>{{ fileShareService.errorMessage() }}</span>
+  </div>
+
+  <!-- Session Controls -->
+  <div *ngIf="!sessionId()" class="mt-6 bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-lg font-semibold mb-4">Create or Join a Session</h2>
+
+    <div class="mb-4">
+      <h3 class="text-md font-medium">Create a new sharing session</h3>
+      <p class="text-sm text-gray-600">
+        Generate a unique ID to connect with others.
+      </p>
+      <button
+        (click)="createNewSession()"
+        [disabled]="isCreatingSession()"
+        class="mt-2 w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
+      >
+        {{ isCreatingSession() ? "Creating..." : "Create New Session" }}
+      </button>
+    </div>
+
+    <div class="relative text-center my-4">
+      <span class="bg-gray-100 px-2 text-sm text-gray-500">OR</span>
+    </div>
+
+    <div>
+      <h3 class="text-md font-medium">Join an existing session</h3>
+      <p class="text-sm text-gray-600">Enter the session ID shared with you.</p>
+      <div class="flex gap-2 mt-2">
+        <input
+          type="text"
+          placeholder="Enter session ID"
+          class="flex-1 p-2 border rounded-lg"
+          [ngModel]="sessionInputValue()"
+          (ngModelChange)="sessionInputValue.set($event)"
+          [disabled]="isJoiningSession()"
+        />
+        <button
+          (click)="joinSession()"
+          [disabled]="!sessionInputValue() || isJoiningSession()"
+          class="py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400"
+        >
+          {{ isJoiningSession() ? "Joining..." : "Join Session" }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Session -->
+  <div *ngIf="sessionId()" class="mt-6 bg-white p-6 rounded-lg shadow-md">
+    <div class="flex justify-between items-center">
+      <h2 class="text-lg font-semibold">Active Session</h2>
+      <button
+        class="py-1 px-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
+        (click)="disconnect()"
+      >
+        Disconnect
+      </button>
+    </div>
+
+    <div class="mt-4">
+      <h3 class="text-md font-medium">Session ID</h3>
+      <div class="flex items-center mt-2 p-2 border rounded-lg">
+        <code class="flex-1 text-gray-700">{{ sessionId() }}</code>
+        <button
+          class="ml-2 text-gray-500 hover:text-gray-700"
+          (click)="copySessionId()"
+        >
+          <i class="material-icons">Copy</i>
+        </button>
+      </div>
+
+      <h3 class="text-md font-medium mt-4">Shareable Link</h3>
+      <div class="flex items-center mt-2 p-2 border rounded-lg">
+        <input
+          type="text"
+          [value]="shareableLink()"
+          readonly
+          class="flex-1 bg-gray-100 p-1"
+        />
+        <button
+          class="ml-2 text-gray-500 hover:text-gray-700"
+          (click)="copySessionLink()"
+        >
+          <i class="material-icons">Copy</i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Transfer -->
+  <div *ngIf="sessionId()" class="mt-6 bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-lg font-semibold">File Transfer</h2>
+
+    <div class="mt-4">
+      <h3 class="text-md font-medium">Send a File</h3>
+      <div class="mt-2 flex items-center gap-2">
+        <input
+          type="file"
+          id="file-input"
+          (change)="onFileSelected($event)"
+          class="hidden"
+          [disabled]="
+            fileShareService.connectionStatus() !== 'data_channel_open'
+          "
+        />
+        <label
+          for="file-input"
+          class="cursor-pointer p-2 border rounded-lg flex items-center gap-2"
+        >
+          <i class="material-icons">Attach file</i>
+          <span>{{
+            selectedFile() ? selectedFile()!.name : "Choose a file"
+          }}</span>
+        </label>
+        <button
+          (click)="sendFile()"
+          [disabled]="!selectedFile()"
+          class="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
+        >
+          Send File
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="fileShareService.transferProgress() > 0" class="mt-4">
+      <h4 class="text-md font-medium">Transfer Progress</h4>
+      <div class="w-full bg-gray-200 rounded-lg h-4 mt-2">
+        <div
+          class="bg-blue-500 h-4 rounded-lg"
+          [style.width.%]="fileShareService.transferProgress()"
+        ></div>
+      </div>
+      <div class="text-sm text-gray-700 mt-1">
+        {{ fileShareService.transferProgress() }}%
+      </div>
+    </div>
+
+    <div *ngIf="receivedFiles().length > 0" class="mt-6">
+      <h3 class="text-md font-medium">Received Files</h3>
+      <ul class="mt-2 space-y-2">
+        <li
+          *ngFor="let file of receivedFiles()"
+          class="flex items-center justify-between p-2 border rounded-lg"
+        >
+          <div class="flex items-center gap-2">
+            <i class="material-icons">Description</i>
+            <span class="text-sm font-medium">{{ file.name }}</span>
+          </div>
+          <a
+            [href]="file.url"
+            download="{{ file.name }}"
+            class="text-blue-500 hover:underline"
+          >
+            Download
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
