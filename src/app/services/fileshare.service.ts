@@ -1,6 +1,8 @@
 import { Injectable, NgZone, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { CryptoService } from './crypto.service';
+import { AuthService } from './auth.service';
+import { StorageKeys } from '../Constants';
 
 interface UserDetails {
   id: string;
@@ -39,17 +41,25 @@ export class FileshareService {
   connectedUsers = signal<string[]>([]);
   connectedUserPublicKeys: string[] = [];
   userDetails = {} as UserDetails;
-  private userDetailKey = 'userDetail';
   private receivedEncryptedKey = '';
   private receivedIV: number[] = [];
-  constructor(private cryptoService: CryptoService) {
+  constructor(
+    private cryptoService: CryptoService,
+    private authorizationService: AuthService
+  ) {
     this.userDetails = JSON.parse(
-      localStorage.getItem(this.userDetailKey) || '{}'
+      localStorage.getItem(StorageKeys.USERDETAIL) || '{}'
     );
     // console.log(this.userDetails);
 
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(`https://localhost:7247/fileHub`)
+      .withUrl(`https://localhost:7247/fileHub`, {
+        accessTokenFactory: () =>
+          localStorage.getItem(StorageKeys.AUTHTOKEN) || '',
+      }) //LOCAL DEBUG
+      // .withUrl(`https://chatapi-jm0g.onrender.com/fileHub`, {
+      //   accessTokenFactory: () => localStorage.getItem(StorageKeys.AUTHTOKEN) || '',
+      // })
       .withAutomaticReconnect()
       .build();
 
@@ -66,7 +76,7 @@ export class FileshareService {
         creatorUserId: string
       ) => {
         this.connectedUserPublicKeys = allUserPublicKeys['publicKey'].filter(
-          (x: string | null) => x != localStorage.getItem('publicKey')
+          (x: string | null) => x != localStorage.getItem(StorageKeys.PUBLICKEY)
         );
 
         this.connectionStatus.set('peer_joined');
@@ -153,7 +163,7 @@ export class FileshareService {
 
       this.sessionId = await this.hubConnection.invoke(
         'CreateSession',
-        localStorage.getItem('publicKey'),
+        localStorage.getItem(StorageKeys.PUBLICKEY),
         this.userDetails.userName
       );
       console.log('Created new session with ID:', this.sessionId);
@@ -178,10 +188,15 @@ export class FileshareService {
       await this.hubConnection.start();
       console.log('SignalR connection established');
       this.connectionStatus.set('signalr_connected');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error starting SignalR connection:', err);
       this.errorMessage.set('Failed to connect to signaling server');
       this.connectionStatus.set('error');
+      if (err.message.includes('401')) {
+        this.authorizationService.tokeExpired.set(true);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        this.authorizationService.handleUnAuthorizedSignalR();
+      }
     }
   }
 
@@ -195,7 +210,7 @@ export class FileshareService {
         'JoinSpecificSession',
         sessionId,
         this.userDetails.userName,
-        localStorage.getItem('publicKey')
+        localStorage.getItem(StorageKeys.PUBLICKEY)
       );
 
       if (result.success) {
@@ -331,7 +346,7 @@ export class FileshareService {
           //decryption process
           const privateKeyDecrypted =
             await this.cryptoService.decryptPrivateKey(
-              localStorage.getItem('privateKey') || ''
+              localStorage.getItem(StorageKeys.PRIVATEKEY) || ''
             );
           const privateKeyLoaded = await this.cryptoService.importPrivateKey(
             privateKeyDecrypted

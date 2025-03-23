@@ -14,6 +14,7 @@ export class HeaderComponent {
   private authService = inject(AuthService);
   isAuthenticated: Signal<boolean> = this.authService.isAuthenticated;
   isTokenExpired: Signal<boolean> = this.authService.tokeExpired;
+  isKeyMissing: Signal<boolean> = this.authService.missingKeys;
   private router = inject(Router);
 
   logout() {

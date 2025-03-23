@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { CryptoService } from '../../services/crypto.service';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { StorageKeys } from '../../Constants';
 
 interface UserDetails {
   id: string;
@@ -25,9 +27,9 @@ export class AddKeyComponent implements OnInit {
   userDetails = {} as UserDetails;
   privateKey = '';
   githubUserName = '';
-  private userDetailKey = 'userDetail';
   private router = inject(Router);
   private cryptoService = inject(CryptoService);
+  private authService = inject(AuthService);
 
   selectedOption: string | null = null;
   publicKey: string | null = null;
@@ -42,8 +44,12 @@ export class AddKeyComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   async ngOnInit() {
+    if (this.authService.missingKeys() == true) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      this.authService.missingKeys.set(false);
+    }
     this.userDetails = JSON.parse(
-      localStorage.getItem(this.userDetailKey) || '{}'
+      localStorage.getItem(StorageKeys.USERDETAIL) || '{}'
     ); //https://stackoverflow.com/questions/46915002/argument-of-type-string-null-is-not-assignable-to-parameter-of-type-string
     await this.cryptoService.generateMasterKey(); // remove this
   }
@@ -55,7 +61,7 @@ export class AddKeyComponent implements OnInit {
 
   async addKey() {
     const publicKey = await this.fetchPublicKey(this.githubUserName);
-    localStorage.setItem('publicKey', publicKey);
+    localStorage.setItem(StorageKeys.PUBLICKEY, publicKey);
     this.router.navigate(['/chat']);
   }
 
@@ -68,7 +74,7 @@ export class AddKeyComponent implements OnInit {
       //save self private key. encrypted
       reader.onload = async () => {
         localStorage.setItem(
-          'privateKey',
+          StorageKeys.PRIVATEKEY,
           await this.cryptoService.encryptPrivateKey(reader.result as string)
         );
         this.privateKey = 'abc';
@@ -99,7 +105,7 @@ export class AddKeyComponent implements OnInit {
       const publicKeyPem = await firstValueFrom(
         this.http.get(url, { responseType: 'text' })
       );
-      localStorage.setItem('publicKey', publicKeyPem);
+      localStorage.setItem(StorageKeys.PUBLICKEY, publicKeyPem);
       this.publicKeyRetrieved = true;
     } catch (error) {
       throw new Error('Public key not found for user');
@@ -116,7 +122,7 @@ export class AddKeyComponent implements OnInit {
       console.log(gistData);
       if (gistData.files && gistData.files[this.gistFileName]) {
         localStorage.setItem(
-          'publicKey',
+          StorageKeys.PUBLICKEY,
           gistData.files[this.gistFileName].content
         );
         this.publicKeyRetrieved = true;

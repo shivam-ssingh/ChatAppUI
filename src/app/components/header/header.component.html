@@ -51,3 +51,12 @@
     Your Session has expired, we are taking you back to the login page...
   </p>
 </div>
+
+<div
+  class="flex gap-6 max-sm:flex-col items-center justify-center text-center bg-blue-600 text-white px-6 py-3.5 rounded"
+  *ngIf="isKeyMissing()"
+>
+  <p class="text-base font-medium">
+    Before using the App, you need to add your keys....
+  </p>
+</div>

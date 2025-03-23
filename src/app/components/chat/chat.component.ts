@@ -3,6 +3,8 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { CryptoService } from '../../services/crypto.service';
+import { AuthService } from '../../services/auth.service';
+import { StorageKeys } from '../../Constants';
 
 interface ChatMessage {
   user: string;
@@ -45,14 +47,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   newMessage = '';
   isConnected = false;
   userDetails = {} as UserDetails;
-  private userDetailKey = 'userDetail';
   private usersInRoom: UserInRoom[] = [];
   private newJoinee: NewJoinee = {} as NewJoinee;
   private cryptoService = inject(CryptoService);
+  private authorizationService = inject(AuthService);
 
   ngOnInit(): void {
     this.userDetails = JSON.parse(
-      localStorage.getItem(this.userDetailKey) || '{}'
+      localStorage.getItem(StorageKeys.USERDETAIL) || '{}'
     ); //https://stackoverflow.com/questions/46915002/argument-of-type-string-null-is-not-assignable-to-parameter-of-type-string
   }
 
@@ -65,9 +67,13 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private async setupSignalRConnection() {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl('https://chatapi-jm0g.onrender.com/chat', {
-        accessTokenFactory: () => localStorage.getItem('authToken') || '',
-      })
+      .withUrl('https://localhost:7247/chat', {
+        accessTokenFactory: () =>
+          localStorage.getItem(StorageKeys.AUTHTOKEN) || '',
+      }) //LOCAL DEBUG
+      // .withUrl('https://chatapi-jm0g.onrender.com/chat', {
+      //   accessTokenFactory: () => localStorage.getItem(StorageKeys.AUTHTOKEN) || '',
+      // })
       .withAutomaticReconnect()
       .build();
 
@@ -103,7 +109,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           //load public key
           const privateKeyDecrypted =
             await this.cryptoService.decryptPrivateKey(
-              localStorage.getItem('privateKey') || ''
+              localStorage.getItem(StorageKeys.PRIVATEKEY) || ''
             );
           const privateKeyLoaded = await this.cryptoService.importPrivateKey(
             privateKeyDecrypted
@@ -139,11 +145,16 @@ export class ChatComponent implements OnInit, OnDestroy {
       await this.hubConnection.invoke('JoinSpecificChatRoom', {
         userName: this.userDetails.userName,
         chatRoom: this.chatRoom,
-        publicKey: localStorage.getItem('publicKey'),
+        publicKey: localStorage.getItem(StorageKeys.PUBLICKEY),
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error while connecting to chat: ', err);
       this.isConnected = false;
+      if (err.message.includes('401')) {
+        this.authorizationService.tokeExpired.set(true);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        this.authorizationService.handleUnAuthorizedSignalR();
+      }
     }
   }
 
