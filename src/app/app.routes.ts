@@ -6,6 +6,7 @@ import { HandleCallbackComponent } from './components/handle-callback/handle-cal
 import { FileShareComponent } from './components/file-share/file-share.component';
 import { HeroComponent } from './components/hero/hero.component';
 import { authGuard } from './guards/auth.guard';
+import { keyGuard } from './guards/key.guard';
 
 export const routes: Routes = [
   {
@@ -19,7 +20,7 @@ export const routes: Routes = [
   {
     path: 'chat',
     component: ChatComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, keyGuard],
   },
   {
     path: 'add-key',
@@ -33,6 +34,6 @@ export const routes: Routes = [
   {
     path: 'file-share',
     component: FileShareComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, keyGuard],
   },
 ];
