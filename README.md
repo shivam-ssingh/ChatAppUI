@@ -59,6 +59,6 @@ https://medium.com/@the.v_hacker/progressive-file-encryption-using-web-crypto-ap
 
 Encryption algo use -> AES-CBC
 
-gist->
-
 > it creates an array of objects first(called parts), object being the chunksize(20mb) and the number of the element. then iterating over this array of objects, it slices the file based on the object of the parts array, the sliced chunk is then encrypted.each chunk is encrypted and saved seperately.
+
+This is good for larger files, for now we're going for simpler, we're going for AES-GCM
