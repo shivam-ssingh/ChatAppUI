@@ -5,6 +5,7 @@ import { AddKeyComponent } from './components/add-key/add-key.component';
 import { HandleCallbackComponent } from './components/handle-callback/handle-callback.component';
 import { FileShareComponent } from './components/file-share/file-share.component';
 import { HeroComponent } from './components/hero/hero.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -18,10 +19,12 @@ export const routes: Routes = [
   {
     path: 'chat',
     component: ChatComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'add-key',
     component: AddKeyComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'handle-callback',
@@ -30,5 +33,6 @@ export const routes: Routes = [
   {
     path: 'file-share',
     component: FileShareComponent,
+    canActivate: [authGuard],
   },
 ];
