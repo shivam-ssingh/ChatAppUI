@@ -6,7 +6,7 @@ https://medium.com/@gabrielbastosdeveloper/real-time-application-development-wit
 
 https://damienbod.com/2018/05/13/uploading-and-sending-image-messages-with-asp-net-core-signalr/
 
-## https://medium.com/@tony.infisical/guide-to-nodes-crypto-module-for-encryption-decryption-65c077176980
+https://medium.com/@tony.infisical/guide-to-nodes-crypto-module-for-encryption-decryption-65c077176980
 
 # Window Crypto APIs
 

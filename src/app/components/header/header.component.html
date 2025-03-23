@@ -1,14 +1,24 @@
 <header class="bg-gray-900 text-white p-4 flex justify-between items-center">
-  <h1 class="text-xl font-bold">Chat App</h1>
+  <h1 class="text-xl font-bold cursor-pointer hover:text-gray-300">Chat App</h1>
   <nav>
     <ul class="flex gap-4">
-      <li><a routerLink="/" class="hover:text-gray-300">Home</a></li>
       <li>
+        <a routerLink="/" class="hover:text-gray-300">Home</a>
+      </li>
+      <li class="inline">
         <a
           routerLink="/chat"
           *ngIf="isAuthenticated()"
           class="hover:text-gray-300"
           >Chat</a
+        >
+      </li>
+      <li>
+        <a
+          routerLink="/file-share"
+          *ngIf="isAuthenticated()"
+          class="hover:text-gray-300"
+          >Share Files</a
         >
       </li>
       <li>
@@ -19,14 +29,6 @@
           >Sign In</a
         >
       </li>
-      <!-- <li>
-        <a
-          routerLink="/register"
-          *ngIf="!isAuthenticated()"
-          class="hover:text-gray-300"
-          >Register</a
-        >
-      </li> -->
       <li *ngIf="isAuthenticated()">
         <button
           (click)="logout()"
@@ -38,3 +40,12 @@
     </ul>
   </nav>
 </header>
+
+<div
+  class="flex gap-6 max-sm:flex-col items-center justify-center text-center bg-red-600 text-white px-6 py-3.5 rounded"
+  *ngIf="isTokenExpired()"
+>
+  <p class="text-base font-medium">
+    Your Session has expired, we are taking you back to the login page...
+  </p>
+</div>

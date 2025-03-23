@@ -13,6 +13,7 @@ import { Router, RouterModule } from '@angular/router';
 export class HeaderComponent {
   private authService = inject(AuthService);
   isAuthenticated: Signal<boolean> = this.authService.isAuthenticated;
+  isTokenExpired: Signal<boolean> = this.authService.tokeExpired;
   private router = inject(Router);
 
   logout() {
