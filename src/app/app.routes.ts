@@ -4,6 +4,7 @@ import { ChatComponent } from './components/chat/chat.component';
 import { AddKeyComponent } from './components/add-key/add-key.component';
 import { HandleCallbackComponent } from './components/handle-callback/handle-callback.component';
 import { FileShareComponent } from './components/file-share/file-share.component';
+import { HeroComponent } from './components/hero/hero.component';
 
 export const routes: Routes = [
   {
@@ -12,7 +13,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: LoginComponent,
+    component: HeroComponent,
   },
   {
     path: 'chat',
