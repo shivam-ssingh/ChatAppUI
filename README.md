@@ -8,6 +8,16 @@ https://damienbod.com/2018/05/13/uploading-and-sending-image-messages-with-asp-n
 
 https://medium.com/@tony.infisical/guide-to-nodes-crypto-module-for-encryption-decryption-65c077176980
 
+Adding Guards to not allow users to route in case they're not logged in
+
+https://dev.to/samuelwachira/angular-authentication-route-guards-4joe
+
+https://medium.com/@sehban.alam/everything-you-need-to-know-about-angular-guards-768c21ddbe2b
+
+Ordering Guards new way
+
+https://dev.to/dzinxed/a-new-way-of-ordering-guards-in-angular-24do
+
 # Window Crypto APIs
 
 [Youtube Vid of a talk talking about crypto apis.](https://www.youtube.com/watch?v=cZTHGPn1jdU)
