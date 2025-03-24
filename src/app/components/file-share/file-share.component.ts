@@ -2,11 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FileshareService } from '../../services/fileshare.service';
+import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
+import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-file-share',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ClipboardModule],
   templateUrl: './file-share.component.html',
   styleUrl: './file-share.component.css',
 })
@@ -18,11 +21,19 @@ export class FileShareComponent {
   isJoiningSession = signal<boolean>(false);
   selectedFile = signal<File | null>(null);
   receivedFiles = signal<{ name: string; url: string; size: string }[]>([]);
+  private route = inject(ActivatedRoute);
   // connectedUsersComputed = computed(() =>
   //   this.fileShareService.connectedUsers()
   // );
-
-  constructor() {
+  readonly sessionWatcher = this.route.queryParams
+    .pipe(takeUntilDestroyed())
+    .subscribe((params) => {
+      if (params['session']) {
+        this.sessionInputValue.set(params['session']);
+        this.joinSession();
+      }
+    });
+  constructor(private clipboard: Clipboard) {
     effect(
       () => {
         const fileData = this.fileShareService.receivedFile();
@@ -139,7 +150,11 @@ export class FileShareComponent {
     // this.selectedFile.set(null);
   }
 
-  copySessionId() {}
+  copySessionId() {
+    this.clipboard.copy(this.sessionId());
+  }
 
-  copySessionLink() {}
+  copySessionLink() {
+    this.clipboard.copy(this.shareableLink());
+  }
 }
