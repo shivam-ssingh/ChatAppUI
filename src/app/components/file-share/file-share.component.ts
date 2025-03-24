@@ -157,4 +157,48 @@ export class FileShareComponent {
   copySessionLink() {
     this.clipboard.copy(this.shareableLink());
   }
+
+  connectionStatusUIValue() {
+    let uiValue = '';
+
+    switch (this.fileShareService.connectionStatus()) {
+      case 'peer_joined':
+        uiValue = 'Peer Joined';
+        break;
+      case 'connecting':
+        uiValue = 'Connecting';
+        break;
+      case 'waiting_for_peer':
+        uiValue = 'Waiting for Peer';
+        break;
+      case 'signalr_connected':
+        uiValue = 'SignalR Connected';
+        break;
+      case 'error':
+        uiValue = 'Error';
+        break;
+      case 'joining_session':
+        uiValue = 'Joining Session';
+        break;
+      case 'disconnected':
+        uiValue = 'Disconnected';
+        break;
+      case 'connected':
+        uiValue = 'Connected';
+        break;
+      case 'data_channel_open':
+        uiValue = 'Data Channel Open';
+        break;
+      case 'closed':
+        uiValue = 'Closed';
+        break;
+      case 'data_channel_closed':
+        uiValue = 'Data Channel Closed';
+        break;
+      default:
+        uiValue = this.fileShareService.connectionStatus();
+        break;
+    }
+    return uiValue;
+  }
 }

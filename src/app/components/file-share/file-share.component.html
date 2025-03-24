@@ -31,7 +31,8 @@
         fileShareService.connectionStatus() === 'connecting'
     }"
   >
-    {{ fileShareService.connectionStatus() }}
+    {{ connectionStatusUIValue() }}
+    <!-- {{ fileShareService.connectionStatus() }} -->
   </div>
 
   <!-- Error Message Display -->
