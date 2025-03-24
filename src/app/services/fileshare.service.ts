@@ -53,13 +53,14 @@ export class FileshareService {
     // console.log(this.userDetails);
 
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(`https://localhost:7247/fileHub`, {
+      // .withUrl(`https://localhost:7247/fileHub`, {
+      //   accessTokenFactory: () =>
+      //     localStorage.getItem(StorageKeys.AUTHTOKEN) || '',
+      // }) //LOCAL DEBUG
+      .withUrl(`https://chatapi-jm0g.onrender.com/fileHub`, {
         accessTokenFactory: () =>
           localStorage.getItem(StorageKeys.AUTHTOKEN) || '',
-      }) //LOCAL DEBUG
-      // .withUrl(`https://chatapi-jm0g.onrender.com/fileHub`, {
-      //   accessTokenFactory: () => localStorage.getItem(StorageKeys.AUTHTOKEN) || '',
-      // })
+      })
       .withAutomaticReconnect()
       .build();
 

@@ -43,10 +43,10 @@ export class LoginComponent implements OnInit {
 
   loginWithGitHub() {
     let scope = 'read:user user:email';
-    // let clientId = 'Ov23liPxyE4aelFp6X3Y';
-    // let redirectUri = 'https://chatappui-gs4s.onrender.com/handle-callback';
-    let clientId = 'Ov23lizfoPxXQVBxrBVY'; ////LOCAL DEBUG
-    let redirectUri = 'http://localhost:4200/handle-callback'; ////LOCAL DEBUG
+    let clientId = 'Ov23liPxyE4aelFp6X3Y';
+    let redirectUri = 'https://chatappui-gs4s.onrender.com/handle-callback';
+    // let clientId = 'Ov23lizfoPxXQVBxrBVY'; ////LOCAL DEBUG
+    // let redirectUri = 'http://localhost:4200/handle-callback'; ////LOCAL DEBUG
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
   }
 }

@@ -17,8 +17,8 @@ interface UserDetails {
   providedIn: 'root',
 })
 export class AuthService {
-  // private apiUrl = 'https://chatapi-jm0g.onrender.com/';
-  private apiUrl = 'https://localhost:7247/'; ////LOCAL DEBUG
+  private apiUrl = 'https://chatapi-jm0g.onrender.com/';
+  // private apiUrl = 'https://localhost:7247/'; ////LOCAL DEBUG
   isAuthenticated = signal(this.hasToken());
   private cryptoService = inject(CryptoService);
   public tokeExpired = signal<boolean>(false);
