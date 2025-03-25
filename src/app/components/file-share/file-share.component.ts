@@ -145,9 +145,10 @@ export class FileShareComponent {
   }
 
   disconnect(): void {
-    // this.webRtcService.disconnect();
     this.sessionId.set('');
-    // this.selectedFile.set(null);
+    this.selectedFile.set(null);
+    this.fileShareService.connectedUsers.set([]);
+    this.fileShareService.connectedUserPublicKeys = [];
   }
 
   copySessionId() {

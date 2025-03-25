@@ -74,7 +74,7 @@
     </h1>
 
     <h3
-      *ngIf="publicKeyRetrieved"
+      *ngIf="publicKeyRetrieved && !showFinalWarning"
       class="text-2xl font-semibold text-center text-gray-800 mb-6"
     >
       Your Public key has been retrieved!
@@ -179,20 +179,43 @@
     </div>
 
     <h3
-      *ngIf="privateKeyRetrived"
+      *ngIf="privateKeyRetrived && !showFinalWarning"
       class="text-2xl font-semibold text-center text-gray-800 mb-6"
     >
       Your Private key has been added!
     </h3>
 
     <!-- Proceed Button -->
-    <div *ngIf="privateKeyRetrived" class="mt-6">
+    <div *ngIf="privateKeyRetrived && !showFinalWarning" class="mt-6">
       <button
         type="button"
         (click)="proceed()"
         class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200"
       >
         Proceed
+      </button>
+    </div>
+
+    <div *ngIf="showFinalWarning">
+      <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">
+        Please Note:
+      </h2>
+      <h3 class="text-2xl font-semibold text-center text-gray-800 mb-6">
+        If you <em>refresh</em> your tab, you'll have to <em>RE-ADD</em> your
+        Private key.
+      </h3>
+      <h3 class="text-2xl font-semibold text-center text-gray-800 mb-6">
+        If you <em>open a new tab</em> you'll have to <em>RE-ADD</em> your
+        Private key in the new tab.
+      </h3>
+    </div>
+    <div *ngIf="showFinalWarning" class="mt-6">
+      <button
+        type="button"
+        (click)="continue()"
+        class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200"
+      >
+        Accept and Continue
       </button>
     </div>
   </div>

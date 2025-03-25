@@ -345,19 +345,25 @@ export class FileshareService {
           this.receiveBuffer = [];
 
           //decryption process
-          const privateKeyDecrypted =
-            await this.cryptoService.decryptPrivateKey(
-              localStorage.getItem(StorageKeys.PRIVATEKEY) || ''
+          // const privateKeyDecrypted =
+          //   await this.cryptoService.decryptPrivateKey(
+          //     localStorage.getItem(StorageKeys.PRIVATEKEY) || ''
+          //   );
+          // const privateKeyLoaded = await this.cryptoService.importPrivateKey(
+          //   privateKeyDecrypted
+          // );
+          // const decryptedArrayBuffer = await this.cryptoService.decryptFile(
+          //   privateKeyLoaded,
+          //   this.receivedEncryptedKey,
+          //   arrayBuffer,
+          //   this.receivedIV
+          // );
+          const decryptedArrayBuffer =
+            await this.cryptoService.decryptFileWithInMemoryPrivateKey(
+              this.receivedEncryptedKey,
+              arrayBuffer,
+              this.receivedIV
             );
-          const privateKeyLoaded = await this.cryptoService.importPrivateKey(
-            privateKeyDecrypted
-          );
-          const decryptedArrayBuffer = await this.cryptoService.decryptFile(
-            privateKeyLoaded,
-            this.receivedEncryptedKey,
-            arrayBuffer,
-            this.receivedIV
-          );
           const receivedDecryptedBlob = new Blob([decryptedArrayBuffer]);
           // Notify the UI that a file has been received
           this.receivedFile.set({

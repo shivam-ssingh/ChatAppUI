@@ -107,25 +107,28 @@ export class ChatComponent implements OnInit, OnDestroy {
       'ReceiveEncryptedMessage',
       async (user: string, message: string) => {
         try {
-          //load public key
-          const privateKeyDecrypted =
-            await this.cryptoService.decryptPrivateKey(
-              localStorage.getItem(StorageKeys.PRIVATEKEY) || ''
+          //load private key
+          // const privateKeyDecrypted =
+          //   await this.cryptoService.decryptPrivateKey(
+          //     localStorage.getItem(StorageKeys.PRIVATEKEY) || ''
+          //   );
+          // const privateKeyLoaded = await this.cryptoService.importPrivateKey(
+          //   privateKeyDecrypted
+          // );
+          // const decryptedMessage = await this.cryptoService.decryptMessage(
+          //   privateKeyLoaded,
+          //   message
+          // );
+          const decryptedMessage =
+            await this.cryptoService.decryptMessageWithInMemoryPrimaryKey(
+              message
             );
-          const privateKeyLoaded = await this.cryptoService.importPrivateKey(
-            privateKeyDecrypted
-          );
-          const decryptedMessage = await this.cryptoService.decryptMessage(
-            privateKeyLoaded,
-            message
-          );
-          // this.messages.push(
-          //   {
-          //   user,
-          //   message: `encrypted message recived -> ${message}`,
-          //   timestamp: new Date(),
-          //   isSystemMessage: user.toLowerCase() === 'admin',
-          // });
+          this.messages.push({
+            user,
+            message: `encrypted message recived -> ${message}`,
+            timestamp: new Date(),
+            isSystemMessage: user.toLowerCase() === 'admin',
+          });
           this.messages.push({
             user,
             message: decryptedMessage,

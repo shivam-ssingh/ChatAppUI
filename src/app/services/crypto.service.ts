@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
@@ -7,8 +7,14 @@ export class CryptoService {
   private encoder = new TextEncoder();
   private decoder = new TextDecoder();
   private masterKey!: CryptoKey;
+  // private privateKey!: CryptoKey;
+  privateKey = signal<CryptoKey | null>(null);
 
   //TODO: Save the public key and encrypted Private key in indexed db for more safety
+
+  constructor() {
+    this.setupUnloadWarning();
+  }
 
   // encrypting the message with public key
   async encryptMessage(publicKey: CryptoKey, message: string): Promise<string> {
@@ -29,6 +35,19 @@ export class CryptoService {
     const decryptedData = await crypto.subtle.decrypt(
       { name: 'RSA-OAEP' },
       privateKey,
+      binaryData
+    );
+    return this.decoder.decode(decryptedData);
+  }
+
+  // encrypting the message with private key
+  async decryptMessageWithInMemoryPrimaryKey(
+    encryptedMessage: string
+  ): Promise<string> {
+    const binaryData = this.base64ToArrayBuffer(encryptedMessage);
+    const decryptedData = await crypto.subtle.decrypt(
+      { name: 'RSA-OAEP' },
+      this.privateKey()!,
       binaryData
     );
     return this.decoder.decode(decryptedData);
@@ -105,6 +124,20 @@ export class CryptoService {
     );
 
     return this.decoder.decode(decryptedData);
+  }
+
+  private setupUnloadWarning() {
+    window.addEventListener('beforeunload', (event) => {
+      if (this.privateKey()) {
+        event.preventDefault();
+        // event.returnValue = '';
+      }
+    });
+  }
+
+  // load and save privateKey
+  async loadAndSavePrivateKey(privateKey: string) {
+    this.privateKey.set(await this.importPrivateKey(privateKey));
   }
 
   // Importing Private and public keys
@@ -206,6 +239,45 @@ export class CryptoService {
       const decryptedKeyBuffer = await crypto.subtle.decrypt(
         { name: 'RSA-OAEP' },
         privateKey,
+        encryptedKey
+      );
+
+      const aesKey = await crypto.subtle.importKey(
+        'raw',
+        decryptedKeyBuffer,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
+
+      const decryptedData = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        aesKey,
+        encryptedData
+      );
+
+      return decryptedData;
+    } catch (error) {
+      console.error('Decryption error:', error);
+      throw error;
+    }
+  }
+
+  async decryptFileWithInMemoryPrivateKey(
+    encryptedKeyBase64: string,
+    encryptedData: ArrayBuffer,
+    ivArray: number[]
+  ): Promise<ArrayBuffer> {
+    try {
+      const encryptedKey = this.base64ToArrayBuffer(encryptedKeyBase64);
+
+      // Convert IV array back to Uint8Array
+      const iv = new Uint8Array(ivArray);
+
+      // Decrypt the AES key using private key
+      const decryptedKeyBuffer = await crypto.subtle.decrypt(
+        { name: 'RSA-OAEP' },
+        this.privateKey()!,
         encryptedKey
       );
 

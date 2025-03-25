@@ -40,6 +40,7 @@ export class AddKeyComponent implements OnInit {
   canProceed: boolean = false;
   publicKeyRetrieved: boolean = false;
   privateKeyRetrived: boolean = false;
+  showFinalWarning: boolean = false;
 
   constructor(private http: HttpClient) {}
 
@@ -52,6 +53,9 @@ export class AddKeyComponent implements OnInit {
       localStorage.getItem(StorageKeys.USERDETAIL) || '{}'
     ); //https://stackoverflow.com/questions/46915002/argument-of-type-string-null-is-not-assignable-to-parameter-of-type-string
     await this.cryptoService.generateMasterKey(); // remove this
+    if (localStorage.getItem(StorageKeys.PUBLICKEY)) {
+      this.publicKeyRetrieved = true;
+    }
   }
 
   selectOption(option: string) {
@@ -73,11 +77,12 @@ export class AddKeyComponent implements OnInit {
 
       //save self private key. encrypted
       reader.onload = async () => {
-        localStorage.setItem(
-          StorageKeys.PRIVATEKEY,
-          await this.cryptoService.encryptPrivateKey(reader.result as string)
-        );
-        this.privateKey = 'abc';
+        // localStorage.setItem(
+        //   StorageKeys.PRIVATEKEY,
+        //   await this.cryptoService.encryptPrivateKey(reader.result as string)
+        // );
+        // this.privateKey = 'abc';
+        await this.cryptoService.loadAndSavePrivateKey(reader.result as string);
         this.privateKeyRetrived = true;
       };
 
@@ -135,6 +140,10 @@ export class AddKeyComponent implements OnInit {
   }
 
   proceed() {
+    this.showFinalWarning = true;
+  }
+  continue() {
+    this.showFinalWarning = false;
     this.router.navigate(['/chat']);
   }
 }
