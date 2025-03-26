@@ -27,9 +27,13 @@ export class HandleCallbackComponent implements OnInit {
         );
       }
       this.router.navigate(['/add-key']);
-    } catch (error) {
-      console.log('Login Fail');
+    } catch (error: any) {
+      console.log('Login Fail', error);
       this.message = 'Some Error Occured';
+      if (error.error.error === 'GithubEmail') {
+        this.message =
+          'Your email address needs to be made visible on your GitHub profile.';
+      }
       this.isError = true;
     }
   }
