@@ -41,6 +41,7 @@ export class AddKeyComponent implements OnInit {
   publicKeyRetrieved: boolean = false;
   privateKeyRetrived: boolean = false;
   showFinalWarning: boolean = false;
+  keyPairVerificationError: boolean = false;
 
   constructor(private http: HttpClient) {}
 
@@ -139,11 +140,29 @@ export class AddKeyComponent implements OnInit {
     }
   }
 
-  proceed() {
-    this.showFinalWarning = true;
+  async proceed() {
+    if (await this.cryptoService.verifyKeyPair()) {
+      this.showFinalWarning = true;
+    } else {
+      this.keyPairVerificationError = true;
+    }
   }
   continue() {
     this.showFinalWarning = false;
     this.router.navigate(['/chat']);
+  }
+
+  verificationFailBack() {
+    //reset everything
+    this.keyPairVerificationError = false;
+    localStorage.removeItem(StorageKeys.PUBLICKEY);
+    this.cryptoService.privateKey.set(null);
+    this.publicKeyRetrieved = false;
+    this.privateKeyRetrived = false;
+    this.repoName = '';
+    this.keyName = '';
+    this.gistId = '';
+    this.gistFileName = '';
+    this.selectedOption = null;
   }
 }

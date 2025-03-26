@@ -73,12 +73,6 @@
       Welcome, {{ userDetails.userName }}!
     </h1>
 
-    <h3
-      *ngIf="publicKeyRetrieved && !showFinalWarning"
-      class="text-2xl font-semibold text-center text-gray-800 mb-6"
-    >
-      Your Public key has been retrieved!
-    </h3>
     <div *ngIf="!publicKeyRetrieved">
       <!-- Option Buttons -->
       <div class="mb-4">
@@ -159,6 +153,14 @@
         </button>
       </div>
     </div>
+    <h3
+      *ngIf="
+        publicKeyRetrieved && !showFinalWarning && !keyPairVerificationError
+      "
+      class="text-2xl font-semibold text-center text-gray-800 mb-6 pb-3"
+    >
+      Your Public key has been retrieved!
+    </h3>
 
     <div *ngIf="!privateKeyRetrived">
       <!-- Upload Private Key -->
@@ -177,22 +179,45 @@
   </button> -->
       </div>
     </div>
-
     <h3
-      *ngIf="privateKeyRetrived && !showFinalWarning"
+      *ngIf="
+        privateKeyRetrived && !showFinalWarning && !keyPairVerificationError
+      "
       class="text-2xl font-semibold text-center text-gray-800 mb-6"
     >
       Your Private key has been added!
     </h3>
 
     <!-- Proceed Button -->
-    <div *ngIf="privateKeyRetrived && !showFinalWarning" class="mt-6">
+    <div
+      *ngIf="
+        privateKeyRetrived && !showFinalWarning && !keyPairVerificationError
+      "
+      class="mt-6"
+    >
       <button
         type="button"
         (click)="proceed()"
         class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200"
       >
-        Proceed
+        Verify Key-Pair
+      </button>
+    </div>
+
+    <div *ngIf="keyPairVerificationError">
+      <div
+        class="bg-orange-100 border-l-4 border-orange-500 text-red-700 p-4"
+        role="alert"
+      >
+        <p class="font-bold">Error!</p>
+        <p>You have added an invalid Key Pair.</p>
+      </div>
+      <button
+        type="button"
+        (click)="verificationFailBack()"
+        class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200"
+      >
+        Re-Add Keys
       </button>
     </div>
 

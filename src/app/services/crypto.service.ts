@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { StorageKeys } from '../Constants';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +15,26 @@ export class CryptoService {
 
   constructor() {
     this.setupUnloadWarning();
+  }
+
+  async verifyKeyPair() {
+    try {
+      const testString = 'Test message';
+      const importedPublicKey = await this.importPublicKey(
+        localStorage.getItem(StorageKeys.PUBLICKEY)!
+      );
+      const encryptedMessage = await this.encryptMessage(
+        importedPublicKey,
+        testString
+      );
+      const decryptedMessage = await this.decryptMessageWithInMemoryPrimaryKey(
+        encryptedMessage
+      );
+      return testString === decryptedMessage;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 
   // encrypting the message with public key
