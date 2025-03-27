@@ -14,7 +14,6 @@ export class CryptoService {
   //TODO: Save the public key and encrypted Private key in indexed db for more safety
 
   constructor() {
-    this.setupUnloadWarning();
   }
 
   async verifyKeyPair() {
