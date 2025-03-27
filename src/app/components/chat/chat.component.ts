@@ -123,12 +123,12 @@ export class ChatComponent implements OnInit, OnDestroy {
             await this.cryptoService.decryptMessageWithInMemoryPrimaryKey(
               message
             );
-          this.messages.push({
-            user,
-            message: `encrypted message recived -> ${message}`,
-            timestamp: new Date(),
-            isSystemMessage: user.toLowerCase() === 'admin',
-          });
+          // this.messages.push({
+          //   user,
+          //   message: `encrypted message recived -> ${message}`,
+          //   timestamp: new Date(),
+          //   isSystemMessage: user.toLowerCase() === 'admin',
+          // });
           this.messages.push({
             user,
             message: decryptedMessage,
